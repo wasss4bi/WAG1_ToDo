@@ -1,0 +1,199 @@
+@font-face {
+  font-family: 'Ubuntu';
+  src: url('fonts/Ubuntu-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  font-family: "Ubuntu", sans-serif;
+  color: white;
+}
+
+body {
+  /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif; */
+  /* font-family: "Ubuntu", sans-serif; */
+  color: white;
+}
+
+.custom-grey {
+  background-color: rgb(77, 79, 88) !important;
+}
+
+.custom-dark {
+  background-color: rgb(60, 61, 68) !important;
+}
+
+.custom-darker {
+  background-color: rgb(43, 44, 49) !important;
+}
+
+.custom-orange {
+  background-color: rgb(199, 129, 0);
+}
+
+.menu-header {
+  height: 75px;
+  width: 100%;
+  margin: 0;
+  margin-bottom: 1px;
+  
+}
+.menu-header img {
+  height: 40px;
+}
+
+.menu-content {
+  height: calc(100vh - 76px - 76px);
+  overflow-y: auto;
+}
+
+.left-menu-button {
+  height: 100px;
+  width: 100%;
+  margin: 2px 0;
+}
+
+.progress-bar {
+  height: 30px;
+  width:75%
+}
+
+.progress-bar-complete{
+  transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+  
+}
+.progress-bar-need {
+  transition: width 0.5s ease-in-out;
+}
+
+.catalog-progress-bar {
+  height: 10px; 
+}
+
+.center-header {
+  height: 30px;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(77, 79, 88);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(199, 129, 0);
+  border-radius: 10px;
+  border: 3px solid rgb(77, 79, 88);
+}
+
+.new-folder,
+.new-folder img {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+}
+
+.hover:hover {
+  opacity: 50%;
+  transition: ease-in-out .15s;
+}
+
+.btn-img {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.left-item-img {
+  width: 80px;
+  height: 80px;
+}
+
+.custom-link{
+  color:#0d6efd;
+  cursor: pointer;
+}
+.custom-link:hover{
+  text-decoration: underline;
+  opacity: 50%;
+}
+.field-without-styles{
+  background-color: rgb(60, 61, 68);
+  border:none;
+  min-width:2ch;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+/* CHECKBOX */
+.checkbox-wrapper-31:hover .check {
+  stroke-dashoffset: 0;
+}
+
+.checkbox-wrapper-31 {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+}
+.checkbox-wrapper-31 .background {
+  fill: #ccc;
+  transition: ease all 0.6s;
+  -webkit-transition: ease all 0.6s;
+}
+.checkbox-wrapper-31 .stroke {
+  fill: none;
+  stroke: #fff;
+  stroke-miterlimit: 10;
+  stroke-width: 2px;
+  stroke-dashoffset: 100;
+  stroke-dasharray: 100;
+  transition: ease all 0.6s;
+  -webkit-transition: ease all 0.6s;
+}
+.checkbox-wrapper-31 .check {
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2px;
+  stroke-dashoffset: 22;
+  stroke-dasharray: 22;
+  transition: ease all 0.6s;
+  -webkit-transition: ease all 0.6s;
+}
+.checkbox-wrapper-31 input[type=checkbox] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  margin: 0;
+  opacity: 0;
+  -appearance: none;
+  -webkit-appearance: none;
+}
+.checkbox-wrapper-31 input[type=checkbox]:hover {
+  cursor: pointer;
+}
+.checkbox-wrapper-31 input[type=checkbox]:checked + svg .background {
+  fill: #6cbe45;
+}
+.checkbox-wrapper-31 input[type=checkbox]:checked + svg .stroke {
+  stroke-dashoffset: 0;
+}
+.checkbox-wrapper-31 input[type=checkbox]:checked + svg .check {
+  stroke-dashoffset: 0;
+}
