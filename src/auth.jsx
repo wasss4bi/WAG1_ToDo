@@ -85,7 +85,8 @@ function AuthForm() {
 
     useEffect(() => {
         if (!user == false) {
-            localStorage.setItem('user', JSON.stringify(user.dataValues));
+            console.log(user);
+            localStorage.setItem('user', JSON.stringify(user._doc));
             navigate("/todo");
         }
     }, [user]);

@@ -8,7 +8,11 @@ function CreateItemModal({ show, type, id, handleClose, taskTitle, setTaskTitle,
     const addItem = async () => {
         try {
             const user = JSON.parse(localStorage.getItem('user'));
-            await window.electronAPI.addTaskItem(user.id, taskTitle, type, id);
+            await window.electronAPI.addTaskItem(user._id, taskTitle, type, id);            
+            console.log(id);
+            
+            console.log(user._id);
+            console.log("createItemModal");
         } catch (error) {
             console.log(error);
         };

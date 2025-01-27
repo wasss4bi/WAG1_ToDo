@@ -1,44 +1,58 @@
-const { TaskItems, Tasks, Users } = require('./tables.js');
+//const { TaskItem, Task, User } = require('./tables.js');
+const { TaskItem, Task, User } = require('./mongodb.js');
 const { ipcMain } = require('electron');
+const { ObjectId } = require('mongodb');
 let passwordHash = require('password-hash');
+const getObjectIdByRawId = (rawId) => {
+    if (rawId == null) return null;
+    const bufferArray = Object.values(rawId.buffer);
+    const buffer = Buffer.from(bufferArray);
+    const hexString = buffer.toString('hex');
+    const PreparedIdObjectId = new ObjectId(hexString);
+    return PreparedIdObjectId;
+}
 /* taskitems */
-ipcMain.handle('get-taskItemById', async (event, id) => {
-    console.log(id);
+ipcMain.handle('get-taskItemById', async (event, _id) => {
     try {
-        const taskItems = await TaskItems.findAll({
-            where: {
-                id: id,
-            }
+        _id = getObjectIdByRawId(_id);
+        const taskItems = await TaskItem.find({
+            _id: _id,
         });
         return taskItems;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 ipcMain.handle('get-taskItemsByParentId', async (event, userId, parentId) => {
-    console.log(parentId);
+    userId = getObjectIdByRawId(userId);
+    parentId = parentId !== null ? getObjectIdByRawId(parentId) : null;
     try {
-        const taskItems = await TaskItems.findAll({
-            where: {
-                parentId: parentId,
-                userId: userId,
-            }
+        const taskItems = await TaskItem.find({
+            parentId: parentId,
+            userId: userId,
         });
         return taskItems;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 ipcMain.handle('add-taskItem', async (event, userId, title, type, parentId) => {
     try {
-        const taskItem = await TaskItems.create({ userId, title, type, parentId });
+        userId = getObjectIdByRawId(userId);
+        parentId = parentId !== null ? getObjectIdByRawId(parentId) : null;
+        const taskItem = await TaskItem.create({ userId, title, type, parentId });
+        console.log("taskItem " + title + " created successfully")
         return taskItem;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 ipcMain.handle('delete-taskItem', async (event, taskItemId) => {
     try {
+        taskItemId = getObjectIdByRawId(taskItemId);
         await deleteTaskItemAndChildren(taskItemId);
         return true;
     } catch (error) {
@@ -47,168 +61,185 @@ ipcMain.handle('delete-taskItem', async (event, taskItemId) => {
     }
 });
 async function deleteTaskItemAndChildren(taskItemId) {
-    await Tasks.destroy({
-        where: {
-            tasklistId: taskItemId
+    try {
+
+        await Task.deleteMany({ tasklistId: taskItemId });
+        const childTaskItems = await TaskItem.find({ parentId: taskItemId });
+        for (const childTaskItem of childTaskItems) {
+            await deleteTaskItemAndChildren(childTaskItem._id);
         }
-    });
-    const childTaskItems = await TaskItems.findAll({
-        where: {
-            parentId: taskItemId
-        }
-    });
-    for (const childTaskItem of childTaskItems) {
-        await deleteTaskItemAndChildren(childTaskItem.id);
+        await TaskItem.deleteOne({ _id: taskItemId });
+    } catch (error) {
+        console.log(error);
+        return { error: error.message }
     }
-    await TaskItems.destroy({
-        where: {
-            id: taskItemId
-        }
-    });
 }
 ipcMain.handle('update-taskItem', async (event, taskItemId, taskItemTitle) => {
     try {
-        await TaskItems.update(
+        taskItemId = getObjectIdByRawId(taskItemId);
+        await TaskItem.updateOne(
             {
                 title: taskItemTitle
             },
             {
-                where: {
-                    id: taskItemId
-                }
-            },
-        );
+                _id: taskItemId
+            });
         return true;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 
-
 /* tasks */
 ipcMain.handle('add-task', async (event, newTask) => {
-    console.log(newTask)
+    console.log("start adding task");
+    console.log(newTask);
     try {
-        const task = await Tasks.create({
+        const tasklistId = getObjectIdByRawId(newTask.tasklistId);
+        console.log(tasklistId);
+        const task = await Task.create({
             title: newTask.title,
             type: newTask.type,
             priority: newTask.priority,
-            tasklistId: newTask.tasklistId,
+            tasklistId: tasklistId,
             dateOfStart: newTask.dateOfStart,
             dateOfEnd: newTask.dateOfEnd,
             needToComplete: newTask.needToComplete,
         });
         console.log(task);
+        console.log("end adding task");
+
         return task;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 ipcMain.handle('get-tasks', async (event, tasklistId) => {
     try {
-        const tasks = await Tasks.findAll({
-            where: {
-                tasklistId: tasklistId
-            }
+        tasklistId = getObjectIdByRawId(tasklistId);
+        const tasks = await Task.find({
+            tasklistId: tasklistId
         });
         return tasks;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 ipcMain.handle('edit-task', async (event, taskToEdit) => {
     try {
-        const task = await Tasks.update(
+        console.log("start edit task");
+        
+        const taskToEditId = getObjectIdByRawId(taskToEdit.id);
+        console.log(taskToEdit);
+        console.log(taskToEditId);
+        
+        const task = await Task.findByIdAndUpdate(
+            taskToEditId,
             {
-                title: taskToEdit.title,
-                type: taskToEdit.type,
-                priority: taskToEdit.priority,
-                dateOfEnd: taskToEdit.dateOfEnd,
-                needToComplete: taskToEdit.needToComplete,
-            },
-            {
-                where: {
-                    id: taskToEdit.id
+                $set: {
+                    title: taskToEdit.title,
+                    type: taskToEdit.type,
+                    priority: taskToEdit.priority,
+                    dateOfEnd: taskToEdit.dateOfEnd,
+                    needToComplete: taskToEdit.needToComplete,
                 }
-            }
+            },
         );
+        console.log("end edit task");
         return task;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 ipcMain.handle('delete-task', async (event, taskId) => {
     try {
-        const task = await Tasks.destroy(
+        taskId = getObjectIdByRawId(taskId);
+        const task = await Task.destroy(
             {
-                where: {
-                    id: taskId
-                }
+                _id: taskId
             }
         );
         return task;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 ipcMain.handle('change-task-status', async (event, taskId, newStatus) => {
     try {
-        const tasks = await Tasks.update(
-            { status: newStatus },  // Значения для обновления
-            { where: { id: taskId } }
+        console.log("start changing status");
+        taskId = getObjectIdByRawId(taskId);
+        console.log(taskId);
+        console.log(newStatus);
+        const tasks = await Task.findByIdAndUpdate(
+            taskId,
+            { $set: { status: newStatus } }
         );
+        console.log(tasks);
+
         return tasks;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 ipcMain.handle('change-task-complete-already', async (event, taskId, completeAlready) => {
     try {
-        const tasks = await Tasks.update(
-            { completeAlready: completeAlready },  // Значения для обновления
-            { where: { id: taskId } }
+        taskId = getObjectIdByRawId(taskId);
+        const tasks = await Task.findByIdAndUpdate(
+            taskId,
+            { $set: { completeAlready: completeAlready } }
         );
         return tasks;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 ipcMain.handle('get-completed-percent', async (event, taskItemId) => {
     try {
-        const tasks = await Tasks.findAll({
-            where: { tasklistId: taskItemId }
-        });
-
+        taskItemId = getObjectIdByRawId(taskItemId);
+        const tasks = await Task.find({
+            tasklistId: taskItemId
+        }
+        );
         if (tasks.length === 0) {
             return 0;
         }
-
-        const completed = tasks.filter(task => task.dataValues.status == true);
-
+        const completed = tasks.filter(task => task.status == true);
         const completedPercent = (completed.length / tasks.length) * 100;
-
         return completedPercent;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
 ipcMain.handle('get-items-from-parent', async (event, taskItemId) => {
     try {
-        const item = await TaskItems.findOne({ where: { id: taskItemId } });
+        taskItemId = getObjectIdByRawId(taskItemId);
+        const item = await TaskItem.findOne({ _id: taskItemId });
         let items;
-        if (item.dataValues.type == "catalog") {
-            items = await TaskItems.findAll({
-                where: { parentId: taskItemId },
-                limit: 2
-            });
+        if (item.type == "catalog") {
+            items = await TaskItem.find({
+                parentId: taskItemId
+            },
+                { limit: 2 }
+            );
         } else {
-            items = await Tasks.findAll({
-                where: { tasklistId: taskItemId },
-                limit: 2
-            });
+            items = await Task.find(
+                { tasklistId: taskItemId },
+                {
+                    limit: 2
+                }
+            );
         }
         return items;
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });
@@ -216,30 +247,28 @@ ipcMain.handle('get-items-from-parent', async (event, taskItemId) => {
 
 /* users */
 ipcMain.handle('register-user', async (event, username, email, password) => {
-    console.log("bebo");
     try {
         hashedPassword = passwordHash.generate(password);
-        console.log({ username, email, password: hashedPassword });
-        await Users.create({ username, email, password: hashedPassword });
+        await User.create({ username, email, password: hashedPassword });
         return true;
     } catch (error) {
-        return [error, username, email, password, hashedPassword];
+        console.log(error);
+        return [error, username, email];
     }
 });
 ipcMain.handle('login-user', async (event, email, password) => {
     try {
-        const user = await Users.findOne({
-            where: { email: email }
+        const user = await User.findOne({
+            email: email
         });
-        console.log(user.dataValues);
-        if (passwordHash.verify(password, user.dataValues.password)) {
-            console.log(["success", passwordHash.verify(password, user.dataValues.password), password, user.dataValues.password, email]);
+        if (passwordHash.verify(password, user.password)) {
             return user;
         } else {
             console.log("failure");
             return false;
         }
     } catch (error) {
+        console.log(error);
         return { error: error.message };
     }
 });

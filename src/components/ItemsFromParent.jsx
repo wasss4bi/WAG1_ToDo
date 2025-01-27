@@ -16,7 +16,7 @@ function ItemsFromParent({ taskItemId, item, newTaskToCenter }) {
         <div className="opacity-50 ms-3">
             {
                 itemsFromParent.length > 0 ? (
-                    itemsFromParent.map(itemFromParent => <div key={itemFromParent.dataValues.id}>{itemFromParent.dataValues.title}</div>)
+                    itemsFromParent.map((itemFromParent, index) => <div key={index}>{itemFromParent._doc.title}</div>)
                 ) : (
                     <div>Нет элементов</div>
                 )

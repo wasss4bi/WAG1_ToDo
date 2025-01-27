@@ -21,9 +21,23 @@ function LeftItems({ setRightWidth, setCenterWidth }) {
     const [editedTaskItemId, setEditedTaskItemId] = useState();
     const [showItemsOnAdding, setShowItemsOnAdding] = useState(false);
     const [logout, doLogout] = useState(false);
-    const user = JSON.parse(localStorage.getItem('user'));
     const navigate = useNavigate();
-
+    const getUserFromLocalStorage = () => {
+        if (localStorage.getItem('user') != undefined) {
+            return JSON.parse(localStorage.getItem('user'));
+        } else {
+            return false;
+        }
+    }
+    const user = getUserFromLocalStorage();
+    useEffect(() => {
+        if (!logout == false && !user) {
+            console.log("beeb");
+            doLogout(true);
+            localStorage.removeItem('user');
+            navigate('/');
+        }
+    }, [logout]);
     const handleShow = useCallback((type) => {
         setShow(true);
         setType(type);
@@ -35,9 +49,11 @@ function LeftItems({ setRightWidth, setCenterWidth }) {
         setShowItemsOnAdding(true);
     }, []);
     const backward = useCallback(async () => {
-        if (item.parentId != 0) {
+        if (item.parentId != null) {
             const result = await window.electronAPI.getTaskItemById(item.parentId);
-            setItem(result[0].dataValues);
+            console.log(result);
+            
+            setItem(result[0]._doc);
             setTaskList(false);
             setRightWidth(0);
             setCenterWidth(9);
@@ -48,13 +64,7 @@ function LeftItems({ setRightWidth, setCenterWidth }) {
             setCenterWidth(9);
         }
     }, [item]);
-    useEffect(() => {
-        if (!logout == false) {
-            doLogout(true);
-            localStorage.removeItem('user');
-            navigate('/');
-        }
-    }, [logout]);
+
     return (
         <Col className="p-0 d-flex overflow-hidden flex-column align-items-between" sm={3}>
             <div className="w-100">
@@ -63,14 +73,14 @@ function LeftItems({ setRightWidth, setCenterWidth }) {
                         <button className="d-flex border-0 hover h-100 btn-img" onClick={backward}>
                             <img src={leftArrow} alt="" className="left-menu-header-img" />
                         </button>
-                    ) : ""}
+                    ) : null}
                     <div className="fs-3 text-white d-flex h-100 align-items-center ">{item ? item.title : "Каталоги"}</div>
                     <div className="h-100 d-flex align-items-end">
                         {item ? (
                             <button onClick={() => handleShow("tasklist")} className="new-folder hover btn-img ">
                                 <img src={newTasklist} className="left-menu-img " />
                             </button>
-                        ) : ""}
+                        ) : null}
                         <button onClick={() => handleShow("catalog")} className="new-folder hover btn-img">
                             <img src={newFolder} className="left-menu-img" />
                         </button>
@@ -80,7 +90,7 @@ function LeftItems({ setRightWidth, setCenterWidth }) {
                     show={show}
                     handleClose={handleClose}
                     type={type}
-                    id={item ? item.id : "0"}
+                    id={item ? item._id : null}
                     taskTitle={taskTitle}
                     editedTaskItemId={editedTaskItemId}
                     setTaskTitle={setTaskTitle}
@@ -91,7 +101,7 @@ function LeftItems({ setRightWidth, setCenterWidth }) {
                             setItem={setItem}
                             item={item}
                             showItemsOnAdding={showItemsOnAdding}
-                            
+
                             setShowItemsOnAdding={setShowItemsOnAdding}
                             setEditedTaskItemId={setEditedTaskItemId}
                             setShow={setShow}

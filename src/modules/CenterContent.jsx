@@ -29,8 +29,8 @@ function CenterContent({ taskList, centerWidth, newTaskToCenter, addNewTaskToCen
     useEffect(() => {
         if (taskList) {
             const getTasks = async () => {
-                const result = await window.electronAPI.getTasks(taskList.id);
-                setTasks(result.map(content => content.dataValues));
+                const result = await window.electronAPI.getTasks(taskList._id);
+                setTasks(result.map(content => content._doc));
             };
             getTasks();
         }
@@ -44,26 +44,26 @@ function CenterContent({ taskList, centerWidth, newTaskToCenter, addNewTaskToCen
 
     const completeAlreadyField = (task) => {
         return (
-            <input type="number" className="field-without-styles text-end" defaultValue={task.completeAlready} style={{ width: `${String(task.needToComplete).length + 3}ch` }} onChange={(e) => { updateCompleteAlready(e.target.value, task.id) }} />
+            <input type="number" className="field-without-styles text-end" defaultValue={task.completeAlready} style={{ width: `${String(task.needToComplete).length + 3}ch` }} onChange={(e) => { updateCompleteAlready(e.target.value, task._id) }} />
         )
     }
     const getTasksByPriority = (priority) => {
-        const listOfTasks = tasks.filter((task) => task.priority == priority).map((task) => (
-            <div key={task.id} className="d-flex align-items-center mb-2 ms-4" onMouseOver={() => setPencilVisibleId(task.id)} onMouseLeave={() => setPencilVisibleId(null)}>
+        const listOfTasks = tasks.filter((task) => task.priority == priority).map((task, index) => (
+            <div key={index} className="d-flex align-items-center mb-2 ms-4" onMouseOver={() => setPencilVisibleId(task._id)} onMouseLeave={() => setPencilVisibleId(null)}>
                 <div className="checkbox-wrapper-31 d-flex">
-                    <input type="checkbox" id={"task" + task.id} checked={task.status} onChange={(e) => { changeTaskStatus(task.id, e.target.checked); setTaskStatus(!taskStatus); setTaskCheckbox(!taskCheckbox) }} />
+                    <input type="checkbox" id={"task" + task._id} checked={task.status} onChange={(e) => { changeTaskStatus(task._id, e.target.checked); setTaskStatus(!taskStatus); setTaskCheckbox(!taskCheckbox) }} />
                     <svg viewBox="0 0 35.6 35.6">
                         <circle className="background" cx="17.8" cy="17.8" r="17.8"></circle>
                         <circle className="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
                         <polyline className="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
                     </svg>
                 </div>
-                <label className="d-flex form-check-label fs-4 ms-2" htmlFor={"task" + task.id}> {task.title} {task.type == 2 && (
+                <label className="d-flex form-check-label fs-4 ms-2" htmlFor={"task" + task._id}> {task.title} {task.type == 2 && (
                     <>
                         {completeAlreadyField(task)} / {task.needToComplete}
                     </>
                 )}<span className="opacity-50 ms-2"> - {task.dateOfEnd}</span></label>
-                <button className={"btn-img " + (pencilVisibleId == task.id ? "" : "d-none")} onClick={() => openRightMenu(task)}><img src={pencil} width="30" height="30" className="hover" /></button>
+                <button className={"btn-img " + (pencilVisibleId == task._id ? "" : "d-none")} onClick={() => openRightMenu(task)}><img src={pencil} width="30" height="30" className="hover" /></button>
             </div>
         ));
         if (listOfTasks.length > 0) {
@@ -80,7 +80,7 @@ function CenterContent({ taskList, centerWidth, newTaskToCenter, addNewTaskToCen
                         <h4 className="d-flex">{taskList.title}</h4>
                         <ProgressBar
                             PBclass="progress-bar"
-                            taskListId={taskList.id}
+                            taskListId={taskList._id}
                             newTaskToCenter={newTaskToCenter}
                         />
                     </div>
@@ -90,21 +90,18 @@ function CenterContent({ taskList, centerWidth, newTaskToCenter, addNewTaskToCen
                                 <h3>A ( Очень важные )</h3>
                                 {getTasksByPriority(1)}
                             </div>
-
                         )}
                         {getTasksByPriority(2) && (
                             <div>
                                 <h3>B ( Второстепенные )</h3>
                                 {getTasksByPriority(2)}
                             </div>
-
                         )}
                         {getTasksByPriority(3) && (
                             <div>
                                 <h3>C ( Могут подождать )</h3>
                                 {getTasksByPriority(3)}
                             </div>
-
                         )}
                         <button className="d-flex hover btn-img align-items-center" onClick={() => { openRightMenu(); setTaskToEdit(false) }}>
                             <img src={plus} alt="" width="30px" height="30px" />

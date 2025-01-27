@@ -8,15 +8,32 @@ import tripleDot from "../img/triple-dot.png";
 import ProgressBar from "./ProgressBar.jsx";
 import ItemsFromParent from "./ItemsFromParent.jsx";
 import { LeftItemsContext, ToDoContext } from '../todo.jsx';
+import { useNavigate } from 'react-router-dom';
 function Buttons({ item, showItemsOnAdding, setShowItemsOnAdding, setEditedTaskItemId, setShow, setTaskTitle, setType, setItem }) {
     const { newTaskToCenter, setTaskList } = useContext(LeftItemsContext);
     const { taskCheckbox } = useContext(ToDoContext);
     const [taskItems, setTaskItems] = useState([]);
+    const getUserFromLocalStorage = () => {
+        if (localStorage.getItem('user') !== undefined) {
+            return JSON.parse(localStorage.getItem('user'));
+        } else {
+            return false;
+        }
+    }
+    const user = getUserFromLocalStorage();
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (!user) {
+            console.log("beeb");
+            localStorage.removeItem('user');
+            navigate('/');
+        }
+    }, [user]);
     useEffect(() => {
         const getItems = async () => {
-            const user = JSON.parse(localStorage.getItem('user'));
-            const result = await window.electronAPI.getTaskItemsByParentId(user.id, item ? item.id : 0);
-            setTaskItems(result.map(content => content.dataValues));
+            const result = await window.electronAPI.getTaskItemsByParentId(user._id, item ? item._id : null);
+            console.log(item);
+            setTaskItems(result.map(content => content._doc));
         };
         getItems();
     }, [item, showItemsOnAdding]);
@@ -28,6 +45,8 @@ function Buttons({ item, showItemsOnAdding, setShowItemsOnAdding, setEditedTaskI
     }, [showItemsOnAdding]);
 
     const showItemContent = useCallback((taskItem) => {
+        console.log(taskItem);
+        
         if (taskItem.type == "catalog") {
             setItem(taskItem);
             setTaskList(false);
@@ -50,8 +69,8 @@ function Buttons({ item, showItemsOnAdding, setShowItemsOnAdding, setEditedTaskI
     )));
 
     const buttons = useMemo(() => {
-        return taskItems.length > 0 ? taskItems.map((taskItem) => (
-            <div key={taskItem.id} className="rounded-3 d-flex custom-grey border-0 m-1 justify-content-between">
+        return taskItems.length > 0 ? taskItems.map((taskItem, index) => (                    
+            <div key={index} className="rounded-3 d-flex custom-grey border-0 m-1 justify-content-between">
                 <Button className="rounded-3 d-flex custom-grey hover border-0 pt-2 w-100" onClick={() => showItemContent(taskItem)} >
                     <div className="d-flex me-2 ">
                         {taskItem.type == "catalog" ? <img src={folder} className="d-flex left-item-img " /> : <img src={tasklist} className="d-flex left-item-img px-2" />}
@@ -61,14 +80,14 @@ function Buttons({ item, showItemsOnAdding, setShowItemsOnAdding, setEditedTaskI
                             <div className="fs-4 d-flex lh-1">{taskItem.title}</div>
                         </div>
                         <ItemsFromParent
-                            taskItemId={taskItem.id}
+                            taskItemId={taskItem._id}
                             item={item}
                             newTaskToCenter={newTaskToCenter}
                         />
                         {taskItem.type == "tasklist" &&
                             <ProgressBar
                                 PBclass="catalog-progress-bar"
-                                taskListId={taskItem.id}
+                                taskListId={taskItem._id}
                                 newTaskToCenter={newTaskToCenter}
                             />
                         }
@@ -80,8 +99,8 @@ function Buttons({ item, showItemsOnAdding, setShowItemsOnAdding, setEditedTaskI
                             <img src={tripleDot} alt="" height="20px" className="btn-img hover d-flex" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            <Dropdown.Item onClick={() => { deleteTaskItem(taskItem.id) }}>Удалить</Dropdown.Item>
-                            <Dropdown.Item onClick={() => { setEditedTaskItemId(taskItem.id); setShow(true); setTaskTitle(taskItem.title) }}>Редактировать</Dropdown.Item>
+                            <Dropdown.Item onClick={() => { deleteTaskItem(taskItem._id) }}>Удалить</Dropdown.Item>
+                            <Dropdown.Item onClick={() => { setEditedTaskItemId(taskItem._id); setShow(true); setTaskTitle(taskItem.title) }}>Редактировать</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
                 </div>

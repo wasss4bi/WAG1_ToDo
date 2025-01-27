@@ -25,7 +25,7 @@ function RightMenu({ setRightWidth, setCenterWidth, rightWidth, addNewTaskToCent
                 title: taskName,
                 type: taskType,
                 priority: taskPriority,
-                tasklistId: taskList.id,
+                tasklistId: taskList._id,
                 dateOfStart: today,
                 dateOfEnd: taskDeadline,
                 needToComplete: taskNeedToComplete,
@@ -58,11 +58,11 @@ function RightMenu({ setRightWidth, setCenterWidth, rightWidth, addNewTaskToCent
     const editTask = async () => {
         try {
             let editingTask = {
-                id: taskToEdit.id,
+                id: taskToEdit._id,
                 title: taskName,
                 type: taskType,
                 priority: taskPriority,
-                tasklistId: taskList.id,
+                tasklistId: taskList._id,
                 dateOfStart: today,
                 dateOfEnd: taskDeadline,
                 needToComplete: taskNeedToComplete,
@@ -111,7 +111,7 @@ function RightMenu({ setRightWidth, setCenterWidth, rightWidth, addNewTaskToCent
                 <div className="d-flex ">
                     <Button className='d-flex mt-4 me-2 px-1' onClick={taskToEdit ? editTask : addTask}>{taskToEdit ? "Редактировать задачу" : "Добавить задачу"}</Button>
                     {taskToEdit && (
-                        <Button className='d-flex mt-4 ms-2 btn-danger px-1' onClick={() => { deleteTask(taskToEdit.id); closeRightMenu(); addNewTaskToCenter(true); }}>Удалить задачу</Button>
+                        <Button className='d-flex mt-4 ms-2 btn-danger px-1' onClick={() => { deleteTask(taskToEdit._id); closeRightMenu(); addNewTaskToCenter(true); }}>Удалить задачу</Button>
                     )}
                 </div>
             </div>
