@@ -77,13 +77,12 @@ async function deleteTaskItemAndChildren(taskItemId) {
 ipcMain.handle('update-taskItem', async (event, taskItemId, taskItemTitle) => {
     try {
         taskItemId = getObjectIdByRawId(taskItemId);
-        await TaskItem.updateOne(
+        await TaskItem.findByIdAndUpdate(
+            taskItemId,
             {
                 title: taskItemTitle
-            },
-            {
-                _id: taskItemId
-            });
+            }
+        );
         return true;
     } catch (error) {
         console.log(error);
@@ -131,11 +130,11 @@ ipcMain.handle('get-tasks', async (event, tasklistId) => {
 ipcMain.handle('edit-task', async (event, taskToEdit) => {
     try {
         console.log("start edit task");
-        
+
         const taskToEditId = getObjectIdByRawId(taskToEdit.id);
         console.log(taskToEdit);
         console.log(taskToEditId);
-        
+
         const task = await Task.findByIdAndUpdate(
             taskToEditId,
             {
@@ -158,7 +157,7 @@ ipcMain.handle('edit-task', async (event, taskToEdit) => {
 ipcMain.handle('delete-task', async (event, taskId) => {
     try {
         taskId = getObjectIdByRawId(taskId);
-        const task = await Task.destroy(
+        const task = await Task.deleteOne(
             {
                 _id: taskId
             }
@@ -227,11 +226,13 @@ ipcMain.handle('get-items-from-parent', async (event, taskItemId) => {
             items = await TaskItem.find({
                 parentId: taskItemId
             },
+                {},
                 { limit: 2 }
             );
         } else {
             items = await Task.find(
                 { tasklistId: taskItemId },
+                {},
                 {
                     limit: 2
                 }

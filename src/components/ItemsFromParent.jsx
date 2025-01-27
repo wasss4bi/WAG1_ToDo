@@ -10,7 +10,9 @@ function ItemsFromParent({ taskItemId, item, newTaskToCenter }) {
                 setItemsFromParent(fetchedItems);
             }
         };
+        
         fetchItems();
+        console.log(itemsFromParent);
     }, [taskItemId, item, newTaskToCenter]);
     return (
         <div className="opacity-50 ms-3">
