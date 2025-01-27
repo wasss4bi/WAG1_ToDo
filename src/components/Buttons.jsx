@@ -9,7 +9,7 @@ import ProgressBar from "./ProgressBar.jsx";
 import ItemsFromParent from "./ItemsFromParent.jsx";
 import { LeftItemsContext, ToDoContext } from '../todo.jsx';
 import { useNavigate } from 'react-router-dom';
-function Buttons({ item, showItemsOnAdding, setShowItemsOnAdding, setEditedTaskItemId, setShow, setTaskTitle, setType, setItem }) {
+function Buttons({ item, showItemsOnAdding, searchQuery, setSearchQuery, setIsSearchVisible, setShowItemsOnAdding, setEditedTaskItemId, setShow, setTaskTitle, setType, setItem }) {
     const { newTaskToCenter, setTaskList } = useContext(LeftItemsContext);
     const { taskCheckbox } = useContext(ToDoContext);
     const [taskItems, setTaskItems] = useState([]);
@@ -31,12 +31,17 @@ function Buttons({ item, showItemsOnAdding, setShowItemsOnAdding, setEditedTaskI
     }, [user]);
     useEffect(() => {
         const getItems = async () => {
-            const result = await window.electronAPI.getTaskItemsByParentId(user._id, item ? item._id : null);
+            let result = [];
+            if (searchQuery.length > 0) {
+                result = await window.electronAPI.searchTaskItems(searchQuery);
+            } else {
+                result = await window.electronAPI.getTaskItemsByParentId(user._id, item ? item._id : null);
+            }
             console.log(item);
             setTaskItems(result.map(content => content._doc));
         };
         getItems();
-    }, [item, showItemsOnAdding]);
+    }, [item, showItemsOnAdding, searchQuery]);
 
     useEffect(() => {
         if (showItemsOnAdding) {
@@ -46,7 +51,8 @@ function Buttons({ item, showItemsOnAdding, setShowItemsOnAdding, setEditedTaskI
 
     const showItemContent = useCallback((taskItem) => {
         console.log(taskItem);
-        
+        setSearchQuery("");
+        setIsSearchVisible(false);
         if (taskItem.type == "catalog") {
             setItem(taskItem);
             setTaskList(false);
@@ -69,7 +75,7 @@ function Buttons({ item, showItemsOnAdding, setShowItemsOnAdding, setEditedTaskI
     )));
 
     const buttons = useMemo(() => {
-        return taskItems.length > 0 ? taskItems.map((taskItem, index) => (                    
+        return taskItems.length > 0 ? taskItems.map((taskItem, index) => (
             <div key={index} className="rounded-3 d-flex custom-grey border-0 m-1 justify-content-between">
                 <Button className="rounded-3 d-flex custom-grey hover border-0 pt-2 w-100" onClick={() => showItemContent(taskItem)} >
                     <div className="d-flex me-2 ">

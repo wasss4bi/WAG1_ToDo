@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getTaskItemsByParentId: (userId, parentId) => ipcRenderer.invoke('get-taskItemsByParentId', userId, parentId),
   deleteTaskItem: (taskItemId) => ipcRenderer.invoke('delete-taskItem', taskItemId),
   updateTaskItem: (taskItemId, taskItemTitle) => ipcRenderer.invoke('update-taskItem', taskItemId, taskItemTitle),
+  searchTaskItems: (searchQuery) => ipcRenderer.invoke('search_taskitems', searchQuery),
   
   addTask: (newTask) => ipcRenderer.invoke('add-task', newTask),
   getTasks: (tasklistId) => ipcRenderer.invoke('get-tasks', tasklistId),

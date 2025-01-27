@@ -89,7 +89,27 @@ ipcMain.handle('update-taskItem', async (event, taskItemId, taskItemTitle) => {
         return { error: error.message };
     }
 });
+ipcMain.handle('search_taskitems', async (event, searchQuery) => {
+    try {
+        if (!searchQuery.trim()) {
+            return []; // Или вернуть все документы, если это ожидаемо
+        }
+        // Экранирование специальных символов
+        const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escapedQuery, 'i');
 
+        const taskItems = await TaskItem.find({
+            $or: [
+                { title: regex },
+                { type: regex },
+            ],
+        });
+        return taskItems;
+    } catch (error) {
+        console.log(error);
+        return { error: error.message };
+    }
+})
 /* tasks */
 ipcMain.handle('add-task', async (event, newTask) => {
     console.log("start adding task");

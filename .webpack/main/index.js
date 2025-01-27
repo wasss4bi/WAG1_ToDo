@@ -95150,7 +95150,29 @@ ipcMain.handle('update-taskItem', async (event, taskItemId, taskItemTitle) => {
     };
   }
 });
-
+ipcMain.handle('search_taskitems', async (event, searchQuery) => {
+  try {
+    if (!searchQuery.trim()) {
+      return []; // Или вернуть все документы, если это ожидаемо
+    }
+    // Экранирование специальных символов
+    const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, 'i');
+    const taskItems = await TaskItem.find({
+      $or: [{
+        title: regex
+      }, {
+        type: regex
+      }]
+    });
+    return taskItems;
+  } catch (error) {
+    console.log(error);
+    return {
+      error: error.message
+    };
+  }
+});
 /* tasks */
 ipcMain.handle('add-task', async (event, newTask) => {
   console.log("start adding task");
@@ -95286,7 +95308,6 @@ ipcMain.handle('get-completed-percent', async (event, taskItemId) => {
 });
 ipcMain.handle('get-items-from-parent', async (event, taskItemId) => {
   try {
-    console.log("start getting items from parent");
     taskItemId = getObjectIdByRawId(taskItemId);
     const item = await TaskItem.findOne({
       _id: taskItemId
@@ -95305,7 +95326,6 @@ ipcMain.handle('get-items-from-parent', async (event, taskItemId) => {
         limit: 2
       });
     }
-    console.log("end getting items from parent");
     return items;
   } catch (error) {
     console.log(error);
